@@ -2,7 +2,7 @@
 -- maybe add som more rotate and pump presets too, that would b cool ig
 
 util.require_natives("1663599433")
-local debug = false 
+local debug = false
 
 local function notify(text) 
     util.toast("[LOVENSE] " .. text)
@@ -377,17 +377,15 @@ vibration_root:toggle("Vibration", {"vibrate"}, "Whether to do vibration at all.
 end, false)
 
 local ef_cooldown = false
-if false then 
-    util.on_pad_shake(function(light_duration, light_intensity, heavy_duration, heavy_intensity, delay_after_this_one)
-        if do_vibrate and vibe_mode == 3 and not ef_cooldown and light_intensity >= vibe_ef_intensity_threshold then
-            local duration = math.max(math.ceil(math.max(light_duration, heavy_duration) / 200), 1)
-            vibrate(vibration_strength, duration, 0, 0)
-            ef_cooldown = true
-            util.yield(duration*1000)
-            ef_cooldown = false
-        end
-    end)
-end
+util.on_pad_shake(function(light_duration, light_intensity, heavy_duration, heavy_intensity, delay_after_this_one)
+    if do_vibrate and vibe_mode == 3 and not ef_cooldown and light_intensity >= vibe_ef_intensity_threshold then
+        local duration = math.max(math.ceil(math.max(light_duration, heavy_duration) / 200), 1)
+        vibrate(vibration_strength, duration, 0, 0)
+        ef_cooldown = true
+        util.yield(duration*1000)
+        ef_cooldown = false
+    end
+end)
 
 
 
