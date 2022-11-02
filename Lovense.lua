@@ -371,7 +371,7 @@ end)
 local vibe_event_feedback_settings = vibration_root:list("Event feedback settings", {}, "")
 
 local vibe_ef_intensity_threshold = 10
-vibe_event_feedback_settings:click_slider("Intensity threshold", {}, "The game vibration must be at least this strong to actually make vibrations occur.", 50, 300, 100, 1, function(val)
+vibe_event_feedback_settings:click_slider("Intensity threshold", {}, "The game vibration must be at least this strong to actually make vibrations occur.", 0, 300, 100, 1, function(val)
     vibe_ef_intensity_threshold = val
 end)
 
