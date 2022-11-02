@@ -22,7 +22,9 @@ local is_vibration_active = false
 local is_pump_active = false 
 local is_rotation_active = false
 local vibration_strength = 20
+local max_vibration_strength = 20
 local rotation_speed = 20
+local max_rotation_speed = 20
 
 local function vibrate() end 
 local function rotate() end 
@@ -38,7 +40,7 @@ function overlap_fix()
     end
 end
 
-root:divider("Version 0.1.0")
+root:divider("Version 0.1.2")
 root:divider("Features")
 local vibration_root = root:list("Vibrate", {}, "Configure vibration-related settings")
 local pump_root = root:list("Pump/Contract", {}, "Configure pump-related settings, which is what controls the \"contraction\" feature of the toy. Note that the pump is still an air pump, so don\'t expect any rapid adjustment options.")
@@ -319,6 +321,7 @@ end
 
 -- vibrations
 function vibrate(speed, length, loop_sec, pause_sec)
+    local speed = math.min(speed, max_vibration_strength)
     for toy_id, toy_data in pairs(all_toys) do 
         send_command("Function", toy_data.name, toy_id, toy_data.domain, toy_data.port, 'Vibrate', speed, length, loop_sec, pause_sec)
         if debug then
@@ -345,9 +348,14 @@ function stop_vibrate()
     vibrate(0, 1, 0, 0)
 end
 
-vibration_root:slider("Vibration strength", {"vibratestrength"}, "The strength/speed of the vibration. This setting will not affect modes with dynamically-scaled vibration strength.", 1, 20, 20, 1, function(val)
+vibration_root:slider("Default vibration strength", {"vibratestrength"}, "The default strength/speed of the vibration. This setting will not affect modes with dynamically-scaled vibration strength.", 1, 20, 20, 1, function(val)
     vibration_strength = val
 end)
+
+vibration_root:slider("Max vibration strength", {"maxvibratestrength"}, "The max strength/speed of the vibration, applicable to all modes.", 1, 20, 20, 1, function(val)
+    max_vibration_strength = val
+end)
+
 
 vibration_duration = 10
 vibration_root:slider("Vibration duration (seconds)", {"vibrateduration"}, "The length of the vibration. This setting will not affect modes with dynamically-scaled vibration duration, or any continuous modes.", 1, 300, 10, 1, function(val)
@@ -450,8 +458,11 @@ util.create_tick_handler(function()
 end)
 
 -- pump
+local max_pump_tightness = 20
+local pump_tightness = 20
 
 function pump(speed, length, loop_sec, pause_sec)
+    local speed = math.min(speed, max_pump_tightness)
     for toy_id, toy_data in pairs(all_toys) do 
         send_command("Function", toy_data.name, toy_id, toy_data.domain, toy_data.port, 'Pump', speed, length, loop_sec, pause_sec)
         if debug then
@@ -460,10 +471,15 @@ function pump(speed, length, loop_sec, pause_sec)
     end
 end
 
-local pump_tightness = 20
-pump_root:slider("Tightness", {"pumptightness"}, "The strength/speed of the pump. This setting will not affect modes with dynamically-scaled pump tightness.", 1, 20, 20, 1, function(val)
+pump_root:slider("Default tightness", {"pumptightness"}, "The default strength/speed of the pump. This setting will not affect modes with dynamically-scaled pump tightness.", 1, 20, 20, 1, function(val)
     pump_tightness = val
 end)
+
+
+pump_root:slider("Max pump tightness", {"pumptightness"}, "The max strength/speed of the pump, applicable to all modes.", 1, 20, 20, 1, function(val)
+    max_pump_tightness = val
+end)
+
 
 local pump_mode = 1
 local pump_modes = {"Continuously tight", "Higher HP = Tighter"}
@@ -491,7 +507,6 @@ end, false)
 
 
 -- MAIN PUMP HANDLER TICK
-local last_hp = ENTITY.GET_ENTITY_HEALTH(players.user_ped())
 local last_pump_tightness = 0
 util.create_tick_handler(function()
     if do_pump then
@@ -523,6 +538,7 @@ end)
 -- ROTATE
 
 function rotate(speed, length, loop_sec, pause_sec)
+    local speed = math.min(speed, max_rotation_speed)
     for toy_id, toy_data in pairs(all_toys) do 
         send_command("Function", toy_data.name, toy_id, toy_data.domain, toy_data.port, 'Rotate', speed, length, loop_sec, pause_sec)
         if debug then
@@ -531,8 +547,12 @@ function rotate(speed, length, loop_sec, pause_sec)
     end
 end
 
-rotate_root:slider("Rotate speed", {"rotatespeed"}, "The strength/speed of the rotations. This setting will not affect modes with dynamically-scaled rotation speed.", 1, 20, 20, 1, function(val)
+rotate_root:slider("Default rotation speed", {"rotatespeed"}, "The strength/speed of the rotations. This setting will not affect modes with dynamically-scaled rotation speed.", 1, 20, 20, 1, function(val)
     rotation_speed = val
+end)
+
+rotate_root:slider("Max rotation speed", {"maxvibratestrength"}, "The max strength/speed of the rotation, applicable to all modes.", 1, 20, 20, 1, function(val)
+    max_rotation_speed = val
 end)
 
 local rotate_mode = 1
