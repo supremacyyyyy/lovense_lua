@@ -40,7 +40,7 @@ function overlap_fix()
     end
 end
 
-root:divider("Version 0.1.2")
+root:divider("Version 0.1.3")
 root:divider("Features")
 local vibration_root = root:list("Vibrate", {}, "Configure vibration-related settings")
 local pump_root = root:list("Pump/Contract", {}, "Configure pump-related settings, which is what controls the \"contraction\" feature of the toy. Note that the pump is still an air pump, so don\'t expect any rapid adjustment options.")
