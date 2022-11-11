@@ -40,7 +40,7 @@ function overlap_fix()
     end
 end
 
-root:divider("Version 0.1.3")
+root:divider("Version 0.1.2")
 root:divider("Features")
 local vibration_root = root:list("Vibrate", {}, "Configure vibration-related settings")
 local pump_root = root:list("Pump/Contract", {}, "Configure pump-related settings, which is what controls the \"contraction\" feature of the toy. Note that the pump is still an air pump, so don\'t expect any rapid adjustment options.")
@@ -150,6 +150,9 @@ local function get_all_toys()
                                 toggle_name = fmt_name 
                             else
                                 toggle_name = fmt_name .. " " .. toy_num
+                            end
+                            if tonumber(toy_data.battery) == -1 then 
+                                toy_data.battery = "???"
                             end
                             notify(fmt_name .. " (" .. toy_id .. ") connected! Battery reading: " .. toy_data.battery .. '%')
                             local features = table.concat(supported_toy_features[toy_data.name], ', ')
@@ -376,7 +379,7 @@ vibe_event_feedback_settings:click_slider("Intensity threshold", {}, "The game v
 end)
 
 local do_vibrate = false
-vibration_root:toggle("Vibration", {"vibrate"}, "Whether to do vibration at all. As soon as you turn this on, the vibrator may immediately start depending on your settings.", function(on)
+local vibration_root_toggle = vibration_root:toggle("Vibration", {"vibrate"}, "Whether to do vibration at all. As soon as you turn this on, the vibrator may immediately start depending on your settings.", function(on)
     do_vibrate = on
     if not on then 
         stop_vibrate()
@@ -498,7 +501,7 @@ function stop_pump()
 end
 
 local do_pump = false
-pump_root:toggle("Pump", {"pump"}, "Make sure your pump air vent is open! ;)\nWhether to use the pump at all. As soon as you turn this on, the pump may immediately start depending on your settings.", function(on)
+local pump_root_toggle = pump_root:toggle("Pump", {"pump"}, "Make sure your pump air vent is open! ;)\nWhether to use the pump at all. As soon as you turn this on, the pump may immediately start depending on your settings.", function(on)
     do_pump = on
     if not on then 
         stop_pump()
@@ -572,7 +575,7 @@ function stop_rotation()
 end
 
 local do_rotate = false
-rotate_root:toggle("Rotate", {"rotate"}, "Whether to use rotations at all. As soon as you turn this on, the rotation may immediately start depending on your settings.", function(on)
+local rotation_root_toggle = rotate_root:toggle("Rotate", {"rotate"}, "Whether to use rotations at all. As soon as you turn this on, the rotation may immediately start depending on your settings.", function(on)
     do_rotate = on
     if not on then 
         stop_rotation()
@@ -856,16 +859,28 @@ chat.on_message(function(sender, reserved, text, team_chat, networked, is_auto)
         end
         pluto_switch p1 do 
             case "vibrate":
-            chat.send_message("> Vibration command sent for " .. duration .. " seconds at strength of " .. strength, false, true, true)
-                vibrate(strength, duration, 0, 0)
+                if not menu.get_value(vibration_root_toggle) then
+                    chat.send_message("> Vibration command sent for " .. duration .. " seconds at strength of " .. strength, false, true, true)
+                    vibrate(strength, duration, 0, 0)
+                else
+                    chat.send_message("> Vibration is already being controlled via a mode and cannot be controlled via chat commands.", false, true, true)
+                end
                 break
             case "pump":
-                chat.send_message("> Pump command sent for " .. duration .. " seconds at strength of " .. strength, false, true, true)
-                pump(strength, duration, 0, 0)
+                if not menu.get_value(pump_root_toggle) then
+                    chat.send_message("> Pump command sent for " .. duration .. " seconds at strength of " .. strength, false, true, true)
+                    pump(strength, duration, 0, 0)
+                else
+                    chat.send_message("> The pump is already being controlled via a mode and cannot be controlled via chat commands.", false, true, true)
+                end
                 break
             case "rotate":
-                chat.send_message("> Rotation command sent for " .. duration .. " seconds at strength of " .. strength, false, true, true)
-                rotate(strength, duration, 0, 0)
+                if not menu.get_value(rotation_root_toggle) then
+                    chat.send_message("> Rotation command sent for " .. duration .. " seconds at strength of " .. strength, false, true, true)
+                    rotate(strength, duration, 0, 0)
+                else
+                    chat.send_message("> Rotation is already being controlled via a mode and cannot be controlled via chat commands.", false, true, true)
+                end
                 break
         end
         cooldown_players[sender] = true 
